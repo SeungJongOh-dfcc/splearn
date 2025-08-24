@@ -25,7 +25,7 @@ class MemberTest {
             }
         };
 
-        member = Member.create("sj@splearn.app", "SJ", "secret", passwordEncoder);
+        member = Member.create(new MemberCreateRequest("sj@splearn.app", "SJ", "secret"), passwordEncoder);
     }
 
     @Test
@@ -79,6 +79,69 @@ class MemberTest {
         member.deactivate();
 
         assertThatThrownBy(member::deactivate).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void verifyPassword() throws Exception {
+        // given
+        assertThat(member.verifyPassword("secret", passwordEncoder)).isTrue();
+        assertThat(member.verifyPassword("hello", passwordEncoder)).isFalse();
+        // when
+
+        // then
+    }
+
+    @Test
+    void changeNickname() throws Exception {
+        // given
+        assertThat(member.getNickname()).isEqualTo("SJ");
+        // when
+        member.changeNickname("changedName");
+
+        // then
+        assertThat(member.getNickname()).isEqualTo("changedName");
+    }
+
+    @Test
+    void changePassword() throws Exception {
+        // given
+        // when
+        member.changePassword("verySecret", passwordEncoder);
+        // then
+        assertThat(member.verifyPassword("verySecret", passwordEncoder)).isTrue();
+    }
+
+    @Test
+    void isActive() throws Exception {
+        // given
+        Assertions.assertThat(member.isActive()).isFalse();
+        // when
+        member.activate();
+
+        // then
+        Assertions.assertThat(member.isActive()).isTrue();
+
+        member.deactivate();
+
+        Assertions.assertThat(member.isActive()).isFalse();
+
+    }
+
+    @Test
+    void invalidEmail() throws Exception {
+        // given
+        assertThatThrownBy(() ->
+                Member.create(new MemberCreateRequest("invalid email", "Toby", "secret"), passwordEncoder)
+        ).isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() ->
+                Member.create(new MemberCreateRequest("", "Toby", "secret"), passwordEncoder)
+        ).isInstanceOf(IllegalArgumentException.class);
+
+        // when
+        Member.create(new MemberCreateRequest("tmdwhd319@gmail.com", "SJ", "secret"), passwordEncoder);
+
+        // then
     }
 
 }
